@@ -1,4 +1,4 @@
-package com.jawue.message;
+package com.jawue.shared.message;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

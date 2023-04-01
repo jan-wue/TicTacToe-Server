@@ -1,8 +1,7 @@
 package com.jawue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jawue.message.Message;
-import com.jawue.message.PlayerMoveMessage;
+import com.jawue.shared.message.Message;
 import io.javalin.Javalin;
 
 /**
@@ -17,16 +16,22 @@ public class App {
         var app = Javalin.create(/*config*/)
             .get("/", ctx -> ctx.result("Hello World"))
 	    .ws("/websocket", ws -> {
-              ws.onConnect(ctx -> {
+         PlayerConnection playerConnection = new PlayerConnection();
+        ws.onConnect(ctx -> {
                 System.out.println("Connected");
-              PlayerConnection playerConnection = new PlayerConnection(ws, ctx);
+                  playerConnection.setWs(ws);
+                  playerConnection.setWsContext(ctx);
               lobby.addPlayerConnection(playerConnection);
               }
               );
               ws.onMessage(ctx -> {
                 ObjectMapper mapper = new ObjectMapper();
-                Message message = mapper.readValue(ctx.message(), Message.class);
+                String messageStr = ctx.message();
+                System.out.println(messageStr);
+                Message message = mapper.readValue(messageStr, Message.class);
+                playerConnection.messages.add(message);
                 System.out.println(message.getClass() + ctx.message());
+
               });
             }) 
             .start(7070);

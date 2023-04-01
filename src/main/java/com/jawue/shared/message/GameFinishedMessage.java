@@ -1,4 +1,6 @@
-package com.jawue.message;
+package com.jawue.shared.message;
+
+import com.jawue.shared.WinnerResult;
 
 public class GameFinishedMessage extends Message {
 WinnerResult winnerResult;

@@ -1,5 +1,7 @@
 package com.jawue;
 
+import com.jawue.shared.message.ConnectMessage;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -13,11 +15,13 @@ public class Lobby extends Thread{
     while(true) {
      try {
        PlayerConnection player1 = boundedQueue.take();
-       player1.wsContext.send("you are connected bro");
+       player1.sendMessage(new ConnectMessage());
 
        PlayerConnection player2 = boundedQueue.take();
-       player2.wsContext.send("you are connected bro");
-       System.out.println("works");
+
+       player2.sendMessage(new ConnectMessage());
+       Game game = new Game(player1, player2);
+       game.start();
      } catch (Exception exception) {
 
      }

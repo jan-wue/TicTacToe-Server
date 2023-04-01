@@ -1,4 +1,4 @@
-package com.jawue.message;
+package com.jawue.shared;
 
 public enum WinnerResult {
 

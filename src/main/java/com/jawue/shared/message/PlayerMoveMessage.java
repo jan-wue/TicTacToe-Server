@@ -1,7 +1,4 @@
-package com.jawue.message;
-
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+package com.jawue.shared.message;
 
 public class PlayerMoveMessage extends Message {
   private String field;
