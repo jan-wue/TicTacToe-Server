@@ -16,8 +16,9 @@ public class App {
         var app = Javalin.create(/*config*/)
             .get("/", ctx -> ctx.result("Hello World"))
 	    .ws("/websocket", ws -> {
-         PlayerConnection playerConnection = new PlayerConnection();
         ws.onConnect(ctx -> {
+                  PlayerConnection playerConnection = new PlayerConnection();
+                  ctx.attribute("playerConnection", playerConnection );
                 System.out.println("Connected");
                   playerConnection.setWs(ws);
                   playerConnection.setWsContext(ctx);
@@ -29,6 +30,7 @@ public class App {
                 String messageStr = ctx.message();
                 System.out.println(messageStr);
                 Message message = mapper.readValue(messageStr, Message.class);
+                PlayerConnection playerConnection = (PlayerConnection) ctx.attribute("playerConnection");
                 playerConnection.messages.add(message);
                 System.out.println(message.getClass() + ctx.message());
 
