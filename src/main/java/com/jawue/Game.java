@@ -21,6 +21,8 @@ public class Game extends Thread {
     while (true) {
       player1.sendMessage(new RequestMoveMessage());
       PlayerMoveMessage playerMoveMessage = (PlayerMoveMessage) player1.receiveMessage();
+
+
       MoveResultMessage moveResultMessage = new MoveResultMessage(board, null);
       player1.sendMessage(moveResultMessage);
       player2.sendMessage(moveResultMessage);
