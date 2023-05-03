@@ -1,17 +1,14 @@
 package com.jawue.shared;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.jawue.GameSymbol;
 import com.jawue.shared.message.MoveResultMessage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @JsonSerialize
 public class Board {
   String[][] board = new String[3][3];
-  private final String emptyFieldSymbol = "-";
 
   @Override
   public String toString() {
@@ -54,7 +51,7 @@ public class Board {
     for(int i = 0; i < this.board.length; i++) {
       for(int j = 0; j < this.board[i].length; j++) {
         if(board[i][j] == null) {
-          board[i][j] = emptyFieldSymbol;
+          board[i][j] = GameSymbol.Empty.getSYMBOL();
         }
       }
     }
@@ -63,7 +60,7 @@ public class Board {
   public void fill(PlayerMove move) {
     int rowIndex =  Character.getNumericValue(move.getRow());
     int columnIndex = move.getColumn() - 'A';
-    this.board[rowIndex][columnIndex] = "X";
+    this.board[rowIndex][columnIndex] = GameSymbol.X.getSYMBOL();
   }
   public MoveResultMessage validateMove(PlayerMove playerMove) {
     final List<Character> VALIDROWCHARS = Collections.unmodifiableList(new ArrayList<Character>(Arrays.asList('0', '1', '2')));
@@ -81,11 +78,13 @@ public class Board {
     }
     int rowIndex = Character.getNumericValue(playerMove.getRow());
     int columnIndex = playerMove.getColumn() - 'A';
-    if(this.board[rowIndex][columnIndex] == emptyFieldSymbol  ) {
+    if(this.board[rowIndex][columnIndex].equals(GameSymbol.Empty.getSYMBOL())) {
       MoveResultMessage errorMessage = new MoveResultMessage();
       errorMessage.setErrorMessage("your field is already filled, please choose an empty field");
       return errorMessage;
     }
-    
+    this.fill(playerMove);
+    return new MoveResultMessage();
+
   }
 }

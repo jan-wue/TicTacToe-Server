@@ -15,6 +15,7 @@ public class PlayerConnection {
   ObjectMapper mapper = new ObjectMapper();
 
   public PlayerConnection() {
+
   }
 
   public void setWs(WsConfig ws) {
@@ -48,4 +49,6 @@ public class PlayerConnection {
     }
     return null;
   }
+
+
 }

@@ -21,7 +21,6 @@ public class App {
         ws.onConnect(ctx -> {
                   PlayerConnection playerConnection = new PlayerConnection();
                   ctx.attribute("playerConnection", playerConnection );
-                System.out.println("Connected");
                   playerConnection.setWs(ws);
                   playerConnection.setWsContext(ctx);
               lobby.addPlayerConnection(playerConnection);
