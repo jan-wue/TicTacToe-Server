@@ -1,10 +1,11 @@
 package com.jawue.shared;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.jawue.GameSymbol;
-import com.jawue.shared.message.MoveResultMessage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @JsonSerialize
 public class Board {
@@ -62,29 +63,35 @@ public class Board {
     int columnIndex = move.getColumn() - 'A';
     this.board[rowIndex][columnIndex] = GameSymbol.X.getSYMBOL();
   }
-  public MoveResultMessage validateMove(PlayerMove playerMove) {
+  public boolean isMoveValid(PlayerMove playerMove) {
     final List<Character> VALIDROWCHARS = Collections.unmodifiableList(new ArrayList<Character>(Arrays.asList('0', '1', '2')));
     final List<Character> VALIDCOLUMNCHARS = Collections.unmodifiableList(new ArrayList<Character>(Arrays.asList('A', 'B', 'C')));
 
-    if(!VALIDROWCHARS.contains(playerMove.getRow())) {
-      MoveResultMessage errorMessage = new MoveResultMessage();
-      errorMessage.setErrorMessage("Invalid Input !!!  please try again, type 2 Characters, one for the Row and one for the Column");
-      return errorMessage;
+    if(!VALIDROWCHARS.contains(playerMove.getRow()) || !VALIDCOLUMNCHARS.contains(playerMove.getColumn())) {
+      return false;
     }
-    if(!VALIDCOLUMNCHARS.contains(playerMove.getColumn())) {
-      MoveResultMessage errorMessage = new MoveResultMessage();
-      errorMessage.setErrorMessage("Invalid Input !!!  please try again, type 2 Characters, one for the Row and one for the Column");
-      return errorMessage;
-    }
+
+
+
+    return true;
+  }
+
+  public boolean isFieldOccupied (PlayerMove playerMove) {
     int rowIndex = Character.getNumericValue(playerMove.getRow());
     int columnIndex = playerMove.getColumn() - 'A';
-    if(this.board[rowIndex][columnIndex].equals(GameSymbol.Empty.getSYMBOL())) {
-      MoveResultMessage errorMessage = new MoveResultMessage();
-      errorMessage.setErrorMessage("your field is already filled, please choose an empty field");
-      return errorMessage;
-    }
-    this.fill(playerMove);
-    return new MoveResultMessage();
+    this.initialize();
 
+    if(!this.board[rowIndex][columnIndex].equals(GameSymbol.Empty.getSYMBOL())) {
+      return true;
+    }
+    return false;
+  }
+
+  public String[][] getBoard() {
+    return board;
+  }
+
+  public void setBoard(String[][] board) {
+    this.board = board;
   }
 }

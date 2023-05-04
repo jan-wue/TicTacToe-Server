@@ -2,9 +2,8 @@ package com.jawue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jawue.shared.message.Message;
-import com.jawue.shared.PlayerMove;
-import com.jawue.shared.message.PlayerMoveMessage;
 import io.javalin.Javalin;
+import java.time.Duration;
 
 /**
  * Hello world!
@@ -19,6 +18,8 @@ public class App {
             .get("/", ctx -> ctx.result("Hello World"))
                 .ws("/websocket", ws -> {
         ws.onConnect(ctx -> {
+          //keep connection open, idle timeout
+        ctx.session.setIdleTimeout(Duration.ZERO);
                   PlayerConnection playerConnection = new PlayerConnection();
                   ctx.attribute("playerConnection", playerConnection );
                   playerConnection.setWs(ws);
