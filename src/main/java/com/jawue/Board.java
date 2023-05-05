@@ -1,6 +1,8 @@
-package com.jawue.shared;
+package com.jawue;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.jawue.shared.GameSymbol;
+import com.jawue.shared.PlayerMove;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,10 +60,10 @@ public class Board {
     }
   }
 
-  public void fill(PlayerMove move) {
+  public void fill(PlayerMove move, PlayerConnection player) {
     int rowIndex =  Character.getNumericValue(move.getRow());
     int columnIndex = move.getColumn() - 'A';
-    this.board[rowIndex][columnIndex] = GameSymbol.X.getSYMBOL();
+    this.board[rowIndex][columnIndex] = player.getPlayerSymbol().getSYMBOL();
   }
   public boolean isMoveValid(PlayerMove playerMove) {
     final List<Character> VALIDROWCHARS = Collections.unmodifiableList(new ArrayList<Character>(Arrays.asList('0', '1', '2')));

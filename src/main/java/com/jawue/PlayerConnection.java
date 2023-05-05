@@ -1,6 +1,7 @@
 package com.jawue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jawue.shared.message.GameSymbol;
 import com.jawue.shared.message.Message;
 import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsContext;
@@ -14,9 +15,12 @@ public class PlayerConnection {
   BlockingQueue<Message> messages = new LinkedBlockingQueue<Message>();
   ObjectMapper mapper = new ObjectMapper();
 
+private   GameSymbol playerSymbol;
+
   public PlayerConnection() {
 
   }
+
 
   public void setWs(WsConfig ws) {
 
@@ -50,5 +54,11 @@ public class PlayerConnection {
     return null;
   }
 
+  public void setPlayerSymbol(GameSymbol playerSymbol) {
+    this.playerSymbol = playerSymbol;
+  }
 
+  public GameSymbol getPlayerSymbol() {
+    return playerSymbol;
+  }
 }

@@ -1,10 +1,9 @@
 package com.jawue;
 
 import com.jawue.shared.PlayerMove;
-import com.jawue.shared.message.MoveResultMessage;
-import com.jawue.shared.message.PlayerMoveMessage;
-import com.jawue.shared.message.RequestMoveMessage;
-import com.jawue.shared.Board;
+import com.jawue.shared.message.*;
+
+import java.util.Random;
 
 public class Game extends Thread {
   PlayerConnection player1;
@@ -19,6 +18,7 @@ public class Game extends Thread {
   public void run() {
 
     Board board = new Board();
+    setPlayerSymbolsRandomly();
     boolean gameIsNotFinished = true;
     while(gameIsNotFinished) {
       requestAndValidatesMove(board, player1, player2);
@@ -27,7 +27,7 @@ public class Game extends Thread {
     }
 
   }
-  /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move.
+  /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move. Meanwhile waiting for the players move it will send a waitforotherplayer message to the other player.
    **/
 
   /**
@@ -38,6 +38,8 @@ public class Game extends Thread {
 
     boolean isMoveValid = false;
     PlayerMove playerMove =  null;
+    WaitForOtherPlayerMessage waitMessage = new WaitForOtherPlayerMessage("Please wait for your turn bro");
+    otherPlayer.sendMessage(waitMessage);
     while (!isMoveValid) {
 
       currentPlayer.sendMessage(new RequestMoveMessage());
@@ -58,13 +60,27 @@ public class Game extends Thread {
       isMoveValid = true;
 
     }
-    board.fill(playerMove);
+    board.fill(playerMove, currentPlayer);
     MoveResultMessage moveResultMessage = new MoveResultMessage(board, null);
     currentPlayer.sendMessage(moveResultMessage);
     otherPlayer.sendMessage(moveResultMessage);
 
 
   }
+  public void setPlayerSymbolsRandomly() {
+    Random random = new Random();
+    int randomNumber = random.nextInt(1);
+    if(randomNumber == 1) {
+      player1.setPlayerSymbol(GameSymbol.X);
+      player2.setPlayerSymbol(GameSymbol.O);
+    } else {
+      player1.setPlayerSymbol(GameSymbol.O);
+      player2.setPlayerSymbol(GameSymbol.X);
+    }
+
+  }
+
+
 
 
 
