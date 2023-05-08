@@ -16,16 +16,23 @@ public class Game extends Thread {
   }
 
   public void run() {
+    boolean applicationRuns = false;
+      Board board = new Board();
+      board.initialize();
+      setPlayerSymbolsRandomly();
+      boolean gameIsNotFinished = true;
+      while (gameIsNotFinished) {
+        requestAndValidatesMove(board, player1, player2);
+        if(playerHasWon(board, player1.getPlayerSymbol())) {
+          GameFinishedMessage gameFinishedMessage = new GameFinishedMessage(" Congratulation you have won");
+          player1.sendMessage(gameFinishedMessage);
+          GameFinishedMessage gameFinishedMessage1 = new GameFinishedMessage("Sorry bro you have lost");
+          player2.sendMessage(gameFinishedMessage);
+          gameIsNotFinished = true;
+        }
+        requestAndValidatesMove(board, player2, player1);
 
-    Board board = new Board();
-    setPlayerSymbolsRandomly();
-    boolean gameIsNotFinished = true;
-    while(gameIsNotFinished) {
-      requestAndValidatesMove(board, player1, player2);
-      requestAndValidatesMove(board, player2, player1);
-
-    }
-
+      }
   }
   /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move. Meanwhile waiting for the players move it will send a waitforotherplayer message to the other player.
    **/
@@ -79,9 +86,71 @@ public class Game extends Thread {
     }
 
   }
+  public boolean getRowWinner(Board board, Integer rowIndex, GameSymbol playerSymbol) {
+
+    String x0 = board.board[rowIndex][0];
+    String x1 = board.board[rowIndex][1];
+    String x2 = board.board[rowIndex][2];
+
+    return x0.equals(playerSymbol.toString()) && x1.equals(playerSymbol.toString()) && x2.equals(playerSymbol.toString());
+  }
+
+  public boolean getColumnWinner(Board board, Integer columnIndex, GameSymbol gameSymbol) {
+
+    String x0 = board.board[0][columnIndex];
+    String x1 = board.board[1][columnIndex];
+    String x2 = board.board[2][columnIndex];
+
+    return x0.equals(gameSymbol.toString()) && x1.equals(gameSymbol.toString()) && x2.equals(gameSymbol.toString());
+  }
+
+  public boolean getDiagonalLeftWinner(Board board, GameSymbol playerSymbol) {
+
+    String x0 = board.board[0][0];
+    String x1 = board.board[1][1];
+    String x2 = board.board[2][2];
+
+    return x0.equals(playerSymbol.toString()) && x1.equals(playerSymbol.toString()) && x2.equals(playerSymbol.toString());
+  }
+
+  public boolean getDiagonalRightWinner(Board board, GameSymbol gameSymbol) {
+
+    String x0 = board.board[0][2];
+    String x1 = board.board[1][1];
+    String x2 = board.board[2][0];
+
+    return x0.equals(gameSymbol.toString()) && x1.equals(gameSymbol.toString()) && x2.equals(gameSymbol.toString());
+  }
 
 
 
+  public boolean playerHasWon(Board board, GameSymbol playerSymbol) {
+
+    if (getDiagonalRightWinner(board, playerSymbol)) {
+      return true;
+    }
+
+    if (getDiagonalLeftWinner(board, playerSymbol)) {
+      return true;
+    }
+
+    for (int i = 0; i < 3; i++) {
+
+      if (getRowWinner(board, i, playerSymbol)) {
+        return true;
+      }
+    }
+
+    for (int i = 0; i < 3; i++) {
+
+      if (getColumnWinner(board, i, playerSymbol)) {
+
+        return true;
+      }
+    }
+
+    return false;
+  }
 
 
 

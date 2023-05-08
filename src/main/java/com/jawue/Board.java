@@ -21,7 +21,6 @@ public class Board {
 
 
   public void print() {
-    this.initialize();
     System.out.println("       |     |");
     for (int i = 0; i < 3; i++) {
 
