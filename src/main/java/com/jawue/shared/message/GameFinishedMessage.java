@@ -1,5 +1,8 @@
 package com.jawue.shared.message;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize
 public class GameFinishedMessage extends Message {
 private String result;
 

@@ -24,10 +24,10 @@ public class Game extends Thread {
       while (gameIsNotFinished) {
         requestAndValidatesMove(board, player1, player2);
         if(playerHasWon(board, player1.getPlayerSymbol())) {
-          GameFinishedMessage gameFinishedMessage = new GameFinishedMessage(" Congratulation you have won");
-          player1.sendMessage(gameFinishedMessage);
-          GameFinishedMessage gameFinishedMessage1 = new GameFinishedMessage("Sorry bro you have lost");
-          player2.sendMessage(gameFinishedMessage);
+          GameFinishedMessage winMessage = new GameFinishedMessage(" Congratulation you have won");
+          player1.sendMessage(winMessage);
+          GameFinishedMessage lostMessage = new GameFinishedMessage("Sorry bro you have lost");
+          player2.sendMessage(lostMessage);
           gameIsNotFinished = true;
         }
         requestAndValidatesMove(board, player2, player1);
