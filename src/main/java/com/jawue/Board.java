@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 @JsonSerialize
 public class Board {
   String[][] board = new String[3][3];
@@ -87,6 +86,11 @@ public class Board {
     }
     return false;
   }
+  public boolean isBoardFull() {
+     return !Arrays.stream(this.board).flatMap(x -> Arrays.stream(x)).anyMatch(" "::equals);
+
+  }
+
 
   public String[][] getBoard() {
     return board;
@@ -96,3 +100,4 @@ public class Board {
     this.board = board;
   }
 }
+

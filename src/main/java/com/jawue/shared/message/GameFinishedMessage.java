@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class GameFinishedMessage extends Message {
 private String result;
 
+  public GameFinishedMessage() {
+  }
+
   public GameFinishedMessage(String result) {
     this.result = result;
   }
@@ -17,6 +20,7 @@ private String result;
   public void setResult(String result) {
     this.result = result;
   }
+
 }
 
 

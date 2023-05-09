@@ -1,6 +1,7 @@
 package com.jawue;
 
 import com.jawue.shared.PlayerMove;
+import com.jawue.shared.WinnerResult;
 import com.jawue.shared.message.*;
 
 import java.util.Random;
@@ -23,14 +24,24 @@ public class Game extends Thread {
       boolean gameIsNotFinished = true;
       while (gameIsNotFinished) {
         requestAndValidatesMove(board, player1, player2);
-        if(playerHasWon(board, player1.getPlayerSymbol())) {
-          GameFinishedMessage winMessage = new GameFinishedMessage(" Congratulation you have won");
+        if(isThereAWinner(board, player1.getPlayerSymbol())) {
+          GameFinishedMessage winMessage = new GameFinishedMessage("Congratulation you have won");
+          GameFinishedMessage loseMessage= new GameFinishedMessage("Sorry bro you have lost");
           player1.sendMessage(winMessage);
-          GameFinishedMessage lostMessage = new GameFinishedMessage("Sorry bro you have lost");
-          player2.sendMessage(lostMessage);
-          gameIsNotFinished = true;
+          player2.sendMessage(loseMessage);
+        }
+        if(board.isBoardFull()) {
+          GameFinishedMessage drawMessage = new GameFinishedMessage("game endet in Draw");
+          break;
         }
         requestAndValidatesMove(board, player2, player1);
+        if(isThereAWinner(board, player2.getPlayerSymbol())) {
+          GameFinishedMessage winMessage = new GameFinishedMessage("Congratulation you have won");
+          GameFinishedMessage loseMessage= new GameFinishedMessage("Sorry bro you have lost");
+          player2.sendMessage(winMessage);
+          player1.sendMessage(loseMessage);
+        }
+
 
       }
   }
@@ -52,8 +63,8 @@ public class Game extends Thread {
       currentPlayer.sendMessage(new RequestMoveMessage());
       PlayerMoveMessage playerMoveMessage = (PlayerMoveMessage) currentPlayer.receiveMessage();
        playerMove = playerMoveMessage.getPlayerMove();
-      if (!board.isMoveValid(playerMove)) {
 
+      if (!board.isMoveValid(playerMove)) {
        MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Move is not valid please type again");
         currentPlayer.sendMessage(moveResultMessage);
         continue;
@@ -74,6 +85,8 @@ public class Game extends Thread {
 
 
   }
+
+
   public void setPlayerSymbolsRandomly() {
     Random random = new Random();
     int randomNumber = random.nextInt(1);
@@ -124,7 +137,7 @@ public class Game extends Thread {
 
 
 
-  public boolean playerHasWon(Board board, GameSymbol playerSymbol) {
+  public boolean isThereAWinner(Board board, GameSymbol playerSymbol) {
 
     if (getDiagonalRightWinner(board, playerSymbol)) {
       return true;
@@ -151,7 +164,5 @@ public class Game extends Thread {
 
     return false;
   }
-
-
 
 }

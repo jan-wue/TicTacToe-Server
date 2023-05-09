@@ -1,5 +1,6 @@
 package com.jawue;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jawue.shared.message.GameSymbol;
 import com.jawue.shared.message.Message;
@@ -14,6 +15,7 @@ public class PlayerConnection {
   WsContext wsContext;
   BlockingQueue<Message> messages = new LinkedBlockingQueue<Message>();
   ObjectMapper mapper = new ObjectMapper();
+
 
 private   GameSymbol playerSymbol;
 
@@ -37,6 +39,8 @@ private   GameSymbol playerSymbol;
   }
   public void sendMessage(Message message) {
     try {
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
       String json = mapper.writeValueAsString(message);
       this.wsContext.send(json);
     } catch (Exception error) {
