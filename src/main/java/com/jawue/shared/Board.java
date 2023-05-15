@@ -1,16 +1,18 @@
-package com.jawue;
+package com.jawue.shared;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.jawue.shared.GameSymbol;
 import com.jawue.shared.PlayerMove;
+import com.jawue.shared.message.GameSymbol;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 @JsonSerialize
+@JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY)
 public class Board {
-  String[][] board = new String[3][3];
+  private String[][] board = new String[3][3];
 
   @Override
   public String toString() {
@@ -18,6 +20,9 @@ public class Board {
   }
 
 
+  public Board() {
+    this.initialize();
+  }
 
   public void print() {
     System.out.println("       |     |");
@@ -58,10 +63,10 @@ public class Board {
     }
   }
 
-  public void fill(PlayerMove move, PlayerConnection player) {
+  public void fill(PlayerMove move, GameSymbol gameSymbol) {
     int rowIndex =  Character.getNumericValue(move.getRow());
     int columnIndex = move.getColumn() - 'A';
-    this.board[rowIndex][columnIndex] = player.getPlayerSymbol().getSYMBOL();
+    this.board[rowIndex][columnIndex] = gameSymbol.getSYMBOL();
   }
   public boolean isMoveValid(PlayerMove playerMove) {
     final List<Character> VALIDROWCHARS = Collections.unmodifiableList(new ArrayList<Character>(Arrays.asList('0', '1', '2')));
@@ -87,17 +92,22 @@ public class Board {
     return false;
   }
   public boolean isBoardFull() {
-     return !Arrays.stream(this.board).flatMap(x -> Arrays.stream(x)).anyMatch(" "::equals);
+     return !Arrays.stream(this.board).flatMap(x -> Arrays.stream(x)).anyMatch(x -> x.equals(GameSymbol.Empty.getSYMBOL()));
+
+  }
+
+  public Integer getLength() {
+
+    return this.board.length;
+  }
+
+  public String getField(Integer rowIndex, Integer columnIndex) {
+    return this.board[rowIndex][columnIndex];
 
   }
 
 
-  public String[][] getBoard() {
-    return board;
-  }
 
-  public void setBoard(String[][] board) {
-    this.board = board;
-  }
+
 }
 

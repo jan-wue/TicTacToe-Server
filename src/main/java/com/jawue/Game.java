@@ -1,7 +1,7 @@
 package com.jawue;
 
+import com.jawue.shared.Board;
 import com.jawue.shared.PlayerMove;
-import com.jawue.shared.WinnerResult;
 import com.jawue.shared.message.*;
 
 import java.util.Random;
@@ -18,32 +18,53 @@ public class Game extends Thread {
 
   public void run() {
     boolean applicationRuns = false;
-      Board board = new Board();
-      board.initialize();
-      setPlayerSymbolsRandomly();
-      boolean gameIsNotFinished = true;
-      while (gameIsNotFinished) {
-        requestAndValidatesMove(board, player1, player2);
-        if(isThereAWinner(board, player1.getPlayerSymbol())) {
+    Board board = new Board();
+    board.initialize();
+    setPlayerSymbolsRandomly();
+    PlayerConnection currentPlayer = player1;
+    PlayerConnection otherPlayer = player2;
+    boolean isGameFinished = false;
+    boolean isApplicationRunning = true;
+    while (isApplicationRunning) {
+      while (!isGameFinished) {
+        requestAndValidatesMove(board, currentPlayer, otherPlayer);
+        if (isThereAWinner(board, currentPlayer.getPlayerSymbol())) {
           GameFinishedMessage winMessage = new GameFinishedMessage("Congratulation you have won");
-          GameFinishedMessage loseMessage= new GameFinishedMessage("Sorry bro you have lost");
-          player1.sendMessage(winMessage);
-          player2.sendMessage(loseMessage);
+          GameFinishedMessage loseMessage = new GameFinishedMessage("Sorry bro you have lost");
+          currentPlayer.sendMessage(winMessage);
+          otherPlayer.sendMessage(loseMessage);
+          PlayAgainMessage playAgainMessage = new PlayAgainMessage("Would you like to play Again if yes press y else n ");
+          currentPlayer.sendMessage(playAgainMessage);
+          otherPlayer.sendMessage(playAgainMessage);
+          if (!doBothPLayerWantToKeepPlaying()) {
+            isApplicationRunning = false;
+            GameFinishedMessage message = new GameFinishedMessage("Thanks for playing TicTacToe :D");
+            currentPlayer.sendMessage(message);
+            otherPlayer.sendMessage(message);
+          }
+          break;
+
         }
-        if(board.isBoardFull()) {
-          GameFinishedMessage drawMessage = new GameFinishedMessage("game endet in Draw");
+        if (board.isBoardFull()) {
+          GameFinishedMessage drawMessage = new GameFinishedMessage("game ends in Draw");
+          currentPlayer.sendMessage(drawMessage);
+          otherPlayer.sendMessage(drawMessage);
+          isGameFinished = true;
+          if (!doBothPLayerWantToKeepPlaying()) {
+            isApplicationRunning = false;
+          }
           break;
         }
-        requestAndValidatesMove(board, player2, player1);
-        if(isThereAWinner(board, player2.getPlayerSymbol())) {
-          GameFinishedMessage winMessage = new GameFinishedMessage("Congratulation you have won");
-          GameFinishedMessage loseMessage= new GameFinishedMessage("Sorry bro you have lost");
-          player2.sendMessage(winMessage);
-          player1.sendMessage(loseMessage);
+
+        if (currentPlayer == player1) {
+          currentPlayer = player2;
+          otherPlayer = player1;
+        } else {
+          currentPlayer = player1;
+          otherPlayer = player2;
         }
-
-
       }
+    }
   }
   /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move. Meanwhile waiting for the players move it will send a waitforotherplayer message to the other player.
    **/
@@ -55,20 +76,21 @@ public class Game extends Thread {
   public void requestAndValidatesMove(Board board, PlayerConnection currentPlayer, PlayerConnection otherPlayer) {
 
     boolean isMoveValid = false;
-    PlayerMove playerMove =  null;
+    PlayerMove playerMove = null;
     WaitForOtherPlayerMessage waitMessage = new WaitForOtherPlayerMessage("Please wait for your turn bro");
     otherPlayer.sendMessage(waitMessage);
     while (!isMoveValid) {
 
       currentPlayer.sendMessage(new RequestMoveMessage());
       PlayerMoveMessage playerMoveMessage = (PlayerMoveMessage) currentPlayer.receiveMessage();
-       playerMove = playerMoveMessage.getPlayerMove();
+      playerMove = playerMoveMessage.getPlayerMove();
 
       if (!board.isMoveValid(playerMove)) {
-       MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Move is not valid please type again");
+        MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Move is not valid please type again");
         currentPlayer.sendMessage(moveResultMessage);
         continue;
       }
+
       if (board.isFieldOccupied(playerMove)) {
         MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Field is already played, choose another field");
         currentPlayer.sendMessage(moveResultMessage);
@@ -78,7 +100,7 @@ public class Game extends Thread {
       isMoveValid = true;
 
     }
-    board.fill(playerMove, currentPlayer);
+    board.fill(playerMove, currentPlayer.getPlayerSymbol());
     MoveResultMessage moveResultMessage = new MoveResultMessage(board, null);
     currentPlayer.sendMessage(moveResultMessage);
     otherPlayer.sendMessage(moveResultMessage);
@@ -86,11 +108,22 @@ public class Game extends Thread {
 
   }
 
+  public boolean doBothPLayerWantToKeepPlaying() {
+    PlayAgainMessage player1Message = (PlayAgainMessage) player1.receiveMessage();
+    PlayAgainMessage player2Message = (PlayAgainMessage) player2.receiveMessage();
+    Boolean player1Answer = player1Message.getPlayerAnswer();
+    Boolean player2Answer = player2Message.getPlayerAnswer();
+    if (player1Answer  && player2Answer) {
+      return true;
+    }
+    return false;
+  }
+
 
   public void setPlayerSymbolsRandomly() {
     Random random = new Random();
     int randomNumber = random.nextInt(1);
-    if(randomNumber == 1) {
+    if (randomNumber == 1) {
       player1.setPlayerSymbol(GameSymbol.X);
       player2.setPlayerSymbol(GameSymbol.O);
     } else {
@@ -99,42 +132,42 @@ public class Game extends Thread {
     }
 
   }
+
   public boolean getRowWinner(Board board, Integer rowIndex, GameSymbol playerSymbol) {
 
-    String x0 = board.board[rowIndex][0];
-    String x1 = board.board[rowIndex][1];
-    String x2 = board.board[rowIndex][2];
+    String x0 = board.getField(rowIndex, 0);
+    String x1 = board.getField(rowIndex, 1);
+    String x2 = board.getField(rowIndex, 2);
 
     return x0.equals(playerSymbol.toString()) && x1.equals(playerSymbol.toString()) && x2.equals(playerSymbol.toString());
   }
 
   public boolean getColumnWinner(Board board, Integer columnIndex, GameSymbol gameSymbol) {
 
-    String x0 = board.board[0][columnIndex];
-    String x1 = board.board[1][columnIndex];
-    String x2 = board.board[2][columnIndex];
+    String x0 = board.getField(0, columnIndex);
+    String x1 = board.getField(1, columnIndex);
+    String x2 = board.getField(2, columnIndex);
 
     return x0.equals(gameSymbol.toString()) && x1.equals(gameSymbol.toString()) && x2.equals(gameSymbol.toString());
   }
 
   public boolean getDiagonalLeftWinner(Board board, GameSymbol playerSymbol) {
 
-    String x0 = board.board[0][0];
-    String x1 = board.board[1][1];
-    String x2 = board.board[2][2];
+    String x0 = board.getField(0, 0);
+    String x1 = board.getField(1, 1);
+    String x2 = board.getField(2, 2);
 
     return x0.equals(playerSymbol.toString()) && x1.equals(playerSymbol.toString()) && x2.equals(playerSymbol.toString());
   }
 
   public boolean getDiagonalRightWinner(Board board, GameSymbol gameSymbol) {
 
-    String x0 = board.board[0][2];
-    String x1 = board.board[1][1];
-    String x2 = board.board[2][0];
+    String x0 = board.getField(0, 2);
+    String x1 = board.getField(1, 1);
+    String x2 = board.getField(2, 0);
 
     return x0.equals(gameSymbol.toString()) && x1.equals(gameSymbol.toString()) && x2.equals(gameSymbol.toString());
   }
-
 
 
   public boolean isThereAWinner(Board board, GameSymbol playerSymbol) {
