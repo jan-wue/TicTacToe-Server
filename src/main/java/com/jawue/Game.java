@@ -122,7 +122,7 @@ public class Game extends Thread {
 
   public void setPlayerSymbolsRandomly() {
     Random random = new Random();
-    int randomNumber = random.nextInt(1);
+    int randomNumber = random.nextInt(2);
     if (randomNumber == 1) {
       player1.setPlayerSymbol(GameSymbol.X);
       player2.setPlayerSymbol(GameSymbol.O);
