@@ -18,21 +18,32 @@ public class Game extends Thread {
 
   public void run() {
     boolean applicationRuns = false;
-    Board board = new Board();
-    board.initialize();
-    setPlayerSymbolsRandomly();
-    PlayerConnection currentPlayer = player1;
-    PlayerConnection otherPlayer = player2;
-    boolean isGameFinished = false;
+    boolean playersWantAnotherGame = false;
     boolean isApplicationRunning = true;
     while (isApplicationRunning) {
-      while (!isGameFinished) {
+      Board board = new Board();
+      board.initialize();
+      setPlayerSymbolsRandomly();
+      PlayerConnection currentPlayer = player1;
+      PlayerConnection otherPlayer = player2;
+      boolean isGameRunning = true;
+      currentPlayer.sendMessage(new GameStartsMessage("Game starts"));
+      otherPlayer.sendMessage(new GameStartsMessage("Game starts"));
+      while (isGameRunning) {
         requestAndValidatesMove(board, currentPlayer, otherPlayer);
-        if (isThereAWinner(board, currentPlayer.getPlayerSymbol())) {
-          GameFinishedMessage winMessage = new GameFinishedMessage("Congratulation you have won");
-          GameFinishedMessage loseMessage = new GameFinishedMessage("Sorry bro you have lost");
-          currentPlayer.sendMessage(winMessage);
-          otherPlayer.sendMessage(loseMessage);
+        if (isThereAWinner(board, currentPlayer.getPlayerSymbol()) || board.isBoardFull()) {
+          if (board.isBoardFull()) {
+            GameResultMessage drawMessage = new GameResultMessage("game ends in Draw");
+            currentPlayer.sendMessage(drawMessage);
+            otherPlayer.sendMessage(drawMessage);
+          } else {
+            GameResultMessage winMessage = new GameResultMessage("Congratulation you have won");
+            GameResultMessage loseMessage = new GameResultMessage("Sorry bro you have lost");
+            currentPlayer.sendMessage(winMessage);
+            otherPlayer.sendMessage(loseMessage);
+            isGameRunning = false;
+
+          }
           PlayAgainMessage playAgainMessage = new PlayAgainMessage("Would you like to play Again if yes press y else n ");
           currentPlayer.sendMessage(playAgainMessage);
           otherPlayer.sendMessage(playAgainMessage);
@@ -41,20 +52,14 @@ public class Game extends Thread {
             GameFinishedMessage message = new GameFinishedMessage("Thanks for playing TicTacToe :D");
             currentPlayer.sendMessage(message);
             otherPlayer.sendMessage(message);
+          } else {
+            NewGameStartsMessage message = new NewGameStartsMessage("Both players want to keep playing");
+            currentPlayer.sendMessage(message);
+            otherPlayer.sendMessage(message);
           }
-          break;
 
         }
-        if (board.isBoardFull()) {
-          GameFinishedMessage drawMessage = new GameFinishedMessage("game ends in Draw");
-          currentPlayer.sendMessage(drawMessage);
-          otherPlayer.sendMessage(drawMessage);
-          isGameFinished = true;
-          if (!doBothPLayerWantToKeepPlaying()) {
-            isApplicationRunning = false;
-          }
-          break;
-        }
+
 
         if (currentPlayer == player1) {
           currentPlayer = player2;
@@ -64,6 +69,7 @@ public class Game extends Thread {
           otherPlayer = player2;
         }
       }
+
     }
   }
   /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move. Meanwhile waiting for the players move it will send a waitforotherplayer message to the other player.
@@ -113,7 +119,7 @@ public class Game extends Thread {
     PlayAgainMessage player2Message = (PlayAgainMessage) player2.receiveMessage();
     Boolean player1Answer = player1Message.getPlayerAnswer();
     Boolean player2Answer = player2Message.getPlayerAnswer();
-    if (player1Answer  && player2Answer) {
+    if (player1Answer && player2Answer) {
       return true;
     }
     return false;
