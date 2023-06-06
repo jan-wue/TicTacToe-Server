@@ -12,10 +12,25 @@ import java.time.Duration;
 public class App {
 
   public static void main(String[] args) {
+    String html = """
+            <!DOCTYPE html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                <title>TicTacToe</title>
+                <link rel="stylesheet" href="style.css">
+              </head>
+              <body>
+               <h1>TicTacToe</h1>
+              </body>
+            </html>
+            """;
     Lobby lobby = new Lobby();
     lobby.start();
         var app = Javalin.create(/*config*/)
-            .get("/", ctx -> ctx.result("Hello World"))
+            .get("/", ctx -> ctx.html(html))
                 .ws("/websocket", ws -> {
         ws.onConnect(ctx -> {
           //keep connection open, idle timeout
