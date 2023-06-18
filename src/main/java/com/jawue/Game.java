@@ -20,17 +20,44 @@ public class Game extends Thread {
     boolean applicationRuns = false;
     boolean playersWantAnotherGame = false;
     boolean isApplicationRunning = true;
+    int gameCount = 0;
+
     while (isApplicationRunning) {
       Board board = new Board();
       board.initialize();
       setPlayerSymbolsRandomly();
-      PlayerConnection currentPlayer = player1;
-      PlayerConnection otherPlayer = player2;
+      PlayerConnection currentPlayer;
+      PlayerConnection otherPlayer;
+
+      if (gameCount % 2 == 0) {
+        currentPlayer = player1;
+        otherPlayer = player2;
+      } else {
+        currentPlayer = player2;
+        otherPlayer = player1;
+      }
+
       boolean isGameRunning = true;
       currentPlayer.sendMessage(new GameStartsMessage("Game starts"));
       otherPlayer.sendMessage(new GameStartsMessage("Game starts"));
+
       while (isGameRunning) {
-        requestAndValidatesMove(board, currentPlayer, otherPlayer);
+
+        boolean isMoveValid = false;
+        while (!isMoveValid) {
+          WaitForOtherPlayerMessage waitMessage = new WaitForOtherPlayerMessage("Please wait for your turn bro");
+          otherPlayer.sendMessage(waitMessage);
+          currentPlayer.sendMessage(new RequestMoveMessage());
+          Message message = currentPlayer.receiveMessage();
+          if (isDisconnect(message)) {
+            otherPlayer.sendMessage(new DisconnectMessage("Your opponent has disconnected out of fear, \n the game ends thanks for playing tictactoe :)"));
+            return; // return out of run
+          }
+
+          isMoveValid = validatesAndPlaysMove((PlayerMoveMessage) message, board, currentPlayer, otherPlayer);
+        }
+
+
         if (isThereAWinner(board, currentPlayer.getPlayerSymbol()) || board.isBoardFull()) {
           if (board.isBoardFull()) {
             GameResultMessage drawMessage = new GameResultMessage("game ends in Draw");
@@ -44,18 +71,21 @@ public class Game extends Thread {
             isGameRunning = false;
 
           }
+
           PlayAgainMessage playAgainMessage = new PlayAgainMessage("Would you like to play Again if yes press y else n ");
           currentPlayer.sendMessage(playAgainMessage);
           otherPlayer.sendMessage(playAgainMessage);
+
           if (!doBothPLayerWantToKeepPlaying()) {
             isApplicationRunning = false;
-            GameFinishedMessage message = new GameFinishedMessage("Thanks for playing TicTacToe :D");
-            currentPlayer.sendMessage(message);
-            otherPlayer.sendMessage(message);
+            GameFinishedMessage finishedMessage = new GameFinishedMessage("A player don't want to keep playing  but thanks for playing TicTacToe :D ");
+            currentPlayer.sendMessage(finishedMessage);
+            otherPlayer.sendMessage(finishedMessage);
           } else {
-            NewGameStartsMessage message = new NewGameStartsMessage("Both players want to keep playing");
-            currentPlayer.sendMessage(message);
-            otherPlayer.sendMessage(message);
+            NewGameStartsMessage newGameStartsMessage = new NewGameStartsMessage("Both players want to keep playing");
+            gameCount++;
+            currentPlayer.sendMessage(newGameStartsMessage);
+            otherPlayer.sendMessage(newGameStartsMessage);
           }
 
         }
@@ -72,46 +102,28 @@ public class Game extends Thread {
 
     }
   }
-  /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move. Meanwhile waiting for the players move it will send a waitforotherplayer message to the other player.
-   **/
 
-  /**
-   * @param board
-   * @param player
-   */
-  public void requestAndValidatesMove(Board board, PlayerConnection currentPlayer, PlayerConnection otherPlayer) {
+  public boolean validatesAndPlaysMove(PlayerMoveMessage playerMoveMessage, Board board, PlayerConnection currentPlayer, PlayerConnection otherPlayer) {
+    PlayerMove playerMove = playerMoveMessage.getPlayerMove();
 
-    boolean isMoveValid = false;
-    PlayerMove playerMove = null;
-    WaitForOtherPlayerMessage waitMessage = new WaitForOtherPlayerMessage("Please wait for your turn bro");
-    otherPlayer.sendMessage(waitMessage);
-    while (!isMoveValid) {
-
-      currentPlayer.sendMessage(new RequestMoveMessage());
-      PlayerMoveMessage playerMoveMessage = (PlayerMoveMessage) currentPlayer.receiveMessage();
-      playerMove = playerMoveMessage.getPlayerMove();
-
-      if (!board.isMoveValid(playerMove)) {
-        MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Move is not valid please type again");
-        currentPlayer.sendMessage(moveResultMessage);
-        continue;
-      }
-
-      if (board.isFieldOccupied(playerMove)) {
-        MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Field is already played, choose another field");
-        currentPlayer.sendMessage(moveResultMessage);
-        continue;
-      }
-
-      isMoveValid = true;
-
+    if (!board.isMoveValid(playerMove)) {
+      MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Move is not valid please type again");
+      currentPlayer.sendMessage(moveResultMessage);
+      return false;
     }
+
+    if (board.isFieldOccupied(playerMove)) {
+      MoveResultMessage moveResultMessage = new MoveResultMessage(board, "Field is already played, choose another field");
+      currentPlayer.sendMessage(moveResultMessage);
+      return false;
+    }
+
+
     board.fill(playerMove, currentPlayer.getPlayerSymbol());
     MoveResultMessage moveResultMessage = new MoveResultMessage(board, null);
     currentPlayer.sendMessage(moveResultMessage);
     otherPlayer.sendMessage(moveResultMessage);
-
-
+    return true;
   }
 
   public boolean doBothPLayerWantToKeepPlaying() {
@@ -202,6 +214,10 @@ public class Game extends Thread {
     }
 
     return false;
+  }
+
+  public boolean isDisconnect(Message message) {
+    return message instanceof DisconnectMessage;
   }
 
 }

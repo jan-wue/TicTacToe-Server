@@ -1,46 +1,33 @@
 package com.jawue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jawue.shared.message.DisconnectMessage;
 import com.jawue.shared.message.Message;
 import io.javalin.Javalin;
 import java.time.Duration;
 
 /**
  * Hello world!
- *
  */
 public class App {
 
   public static void main(String[] args) {
-    String html = """
-            <!DOCTYPE html>
-            <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                <title>TicTacToe</title>
-                <link rel="stylesheet" href="style.css">
-              </head>
-              <body>
-               <h1>TicTacToe</h1>
-              </body>
-            </html>
-            """;
+
+    String empty = "";
     Lobby lobby = new Lobby();
     lobby.start();
-        var app = Javalin.create(/*config*/)
-            .get("/", ctx -> ctx.html(html))
-                .ws("/websocket", ws -> {
-        ws.onConnect(ctx -> {
-          //keep connection open, idle timeout
-        ctx.session.setIdleTimeout(Duration.ZERO);
-                  PlayerConnection playerConnection = new PlayerConnection();
-                  ctx.attribute("playerConnection", playerConnection );
-                  playerConnection.setWs(ws);
-                  playerConnection.setWsContext(ctx);
-              lobby.addPlayerConnection(playerConnection);
-              }
+    var app = Javalin.create(/*config*/)
+            .get("/", ctx -> ctx.html(empty))
+            .ws("/websocket", ws -> {
+              ws.onConnect(ctx -> {
+                        //keep connection open, idle timeout
+                        ctx.session.setIdleTimeout(Duration.ZERO);
+                        PlayerConnection playerConnection = new PlayerConnection();
+                        ctx.attribute("playerConnection", playerConnection);
+                        playerConnection.setWs(ws);
+                        playerConnection.setWsContext(ctx);
+                        lobby.addPlayerConnection(playerConnection);
+                      }
               );
               ws.onMessage(ctx -> {
                 ObjectMapper mapper = new ObjectMapper();
@@ -49,9 +36,16 @@ public class App {
                 PlayerConnection playerConnection = (PlayerConnection) ctx.attribute("playerConnection");
                 playerConnection.messages.add(message);
                 System.out.println(message.getClass() + ctx.message());
-
               });
-            }) 
+              ws.onClose(ctx -> {
+                        PlayerConnection playerConnection = (PlayerConnection) ctx.attribute("playerConnection");
+                        lobby.removePlayerConnection(playerConnection);
+                        playerConnection.messages.add(new DisconnectMessage("other player has disconnected"));
+                        playerConnection.isDisconnected = true;
+                      }
+              );
+
+            })
             .start(7070);
 
 

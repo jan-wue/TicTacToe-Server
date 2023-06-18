@@ -6,7 +6,6 @@ import com.jawue.shared.message.GameSymbol;
 import com.jawue.shared.message.Message;
 import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsContext;
-
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -15,8 +14,6 @@ public class PlayerConnection {
   WsContext wsContext;
   BlockingQueue<Message> messages = new LinkedBlockingQueue<Message>();
   ObjectMapper mapper = new ObjectMapper();
-
-
 private   GameSymbol playerSymbol;
 
   public PlayerConnection() {
@@ -65,4 +62,8 @@ private   GameSymbol playerSymbol;
   public GameSymbol getPlayerSymbol() {
     return playerSymbol;
   }
+
+
+
+
 }
