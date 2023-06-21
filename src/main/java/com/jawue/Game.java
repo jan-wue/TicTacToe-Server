@@ -102,7 +102,13 @@ public class Game extends Thread {
 
     }
   }
+  /** Sends a requestMove to the player, gets the playermove and validates the move if it is a valid move it will send the result to both players, if not it will keep promting the player for a valid move. Meanwhile waiting for the players move it will send a waitforotherplayer message to the other player.
+   **/
 
+  /**
+   * @param board
+   * @param player
+   */
   public boolean validatesAndPlaysMove(PlayerMoveMessage playerMoveMessage, Board board, PlayerConnection currentPlayer, PlayerConnection otherPlayer) {
     PlayerMove playerMove = playerMoveMessage.getPlayerMove();
 

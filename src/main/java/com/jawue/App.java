@@ -41,7 +41,6 @@ public class App {
                         PlayerConnection playerConnection = (PlayerConnection) ctx.attribute("playerConnection");
                         lobby.removePlayerConnection(playerConnection);
                         playerConnection.messages.add(new DisconnectMessage("other player has disconnected"));
-                        playerConnection.isDisconnected = true;
                       }
               );
 
