@@ -45,7 +45,7 @@ public class Game extends Thread {
 
         boolean isMoveValid = false;
         while (!isMoveValid) {
-          WaitForOtherPlayerMessage waitMessage = new WaitForOtherPlayerMessage("Please wait for your turn bro");
+          WaitForOtherPlayerMessage waitMessage = new WaitForOtherPlayerMessage("Please wait for your turn ");
           otherPlayer.sendMessage(waitMessage);
           currentPlayer.sendMessage(new RequestMoveMessage());
           Message message = currentPlayer.receiveMessage();
